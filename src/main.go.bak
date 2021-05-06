@@ -1,0 +1,94 @@
+// Default router, start with a default middleware log and recovery.
+	r := gin.Default()
+	// handle get request, the first parameters is the access path, second is the handler.
+	r.GET("/test", func(c *gin.Context) {
+		query := c.Query("name")
+		c.JSON(200, gin.H{
+			"status":  "success",
+			"message": query,
+		})
+	})
+
+	// handle post request, the first parameters is the access path, second is the handler.
+	r.POST("/test", func(c *gin.Context) {
+		name := c.PostForm("name")
+		age := c.PostForm("age")
+		returnInfo := map[string]string{"name": name, "age": age}
+		c.JSON(200, gin.H{
+			"status":  "success",
+			"message": returnInfo,
+		})
+	})
+
+	// Single file upload, limit the size of 500KB
+	r.POST("/upload", func(c *gin.Context) {
+		file, err := c.FormFile("file")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"status": "上传失败",
+			})
+		} else if file.Size > 500000 {
+			c.JSON(502, gin.H{
+				"status": "上传失败，文件过大",
+			})
+		} else {
+			err = c.SaveUploadedFile(file, "./single_upload_"+file.Filename)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"status": "上传失败",
+				})
+				return
+			}
+			c.String(200, fmt.Sprintf("'%s' uploaded!", file.Filename))
+		}
+	})
+
+	// Multi file upload
+	r.POST("/uploadMulti", func(c *gin.Context) {
+		form, err := c.MultipartForm()
+		if err != nil {
+			c.JSON(502, gin.H{
+				"status": "上传失败",
+			})
+			return
+		}
+		log.Println(form)
+		files := form.File["file[]"]
+		for _, file := range files {
+			// 上传文件到指定的路径
+			err = c.SaveUploadedFile(file, "./multi_upload_"+file.Filename)
+			if err != nil {
+				c.JSON(502, gin.H{
+					"status": "上传失败",
+				})
+				return
+			}
+		}
+		c.String(200, fmt.Sprintf("%d files uploaded!", len(files)))
+	})
+
+	// Use test middleware.
+	r.GET("/middle", m.PrintMiddle(), func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "using middle",
+		})
+	})
+
+	// Use template model to check the from.
+	r.POST("/user", func(c *gin.Context) {
+		var u m.User
+		if err := c.ShouldBindWith(&u, binding.Form); err != nil {
+			c.JSON(400, gin.H{
+				"status": "参数缺失",
+			})
+			c.Abort()
+			return
+		} else {
+			c.JSON(200, gin.H{
+				"status":  "success",
+				"message": "Welcome, " + u.User,
+			})
+		}
+	})
+	// Run gin at 8080 port.
+	r.Run(":8080")
