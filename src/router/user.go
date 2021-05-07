@@ -13,3 +13,11 @@ func InitBaseRoute(Router *gin.RouterGroup) {
 		UserRouter.POST("login", api.Login)
 	}
 }
+
+func IintAuthRoute(Router *gin.RouterGroup) {
+	UserRouter := Router.Group("")
+	{
+		UserRouter.GET("search_all_user", api.SearchUser)
+		UserRouter.GET("search_user", api.SearchUserByNickname)
+	}
+}
