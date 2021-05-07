@@ -1,3 +1,11 @@
+/*
+ * @Descripttion: nothing
+ * @version: 1.0
+ * @Author: Nickname4th
+ * @Date: 2021-05-07 10:57:38
+ * @LastEditors: Nickname4th
+ * @LastEditTime: 2021-05-07 11:51:33
+ */
 package response
 
 import (
@@ -12,7 +20,6 @@ type Response struct {
 }
 
 func Result(code int, data interface{}, msg string, reason string, c *gin.Context) {
-	// 开始时间
 	c.JSON(code, Response{
 		code,
 		data,
