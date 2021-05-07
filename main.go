@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	global.VP = initialize.Viper()
 	global.DB = initialize.ConnectDB()
 	if global.DB != nil {
 		initialize.Gorm(global.DB)

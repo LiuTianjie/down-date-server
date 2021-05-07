@@ -59,7 +59,7 @@ func JWTAuth() gin.HandlerFunc {
 		// 	c.Abort()
 		// }
 		var u model.User
-		if err = global.DB.Where("`id` = ?", claims.UUID.String()).First(&u).Error; err != nil {
+		if err = global.DB.Where("`uuid` = ?", claims.UUID.String()).First(&u).Error; err != nil {
 			c.JSON(401, gin.H{
 				"status": "FAILED",
 				"detail": "认证失败",
@@ -67,7 +67,7 @@ func JWTAuth() gin.HandlerFunc {
 			c.Abort()
 		}
 		if claims.ExpiresAt-time.Now().Unix() < claims.BufferTime {
-			claims.ExpiresAt = time.Now().Unix() + global.JWT.ExpiresTime
+			claims.ExpiresAt = time.Now().Unix() + global.CONFIG.JWT.ExpiresTime
 			newToken, _ := j.CreateJWT(*claims)
 			newClaims, _ := j.ParseJWT(newToken)
 			c.Header("new-token", newToken)
@@ -90,7 +90,7 @@ func JWTAuth() gin.HandlerFunc {
 
 func NewJWT() *JWT {
 	return &JWT{
-		[]byte(global.JWT.SignKey),
+		[]byte(global.CONFIG.JWT.SignKey),
 	}
 }
 
