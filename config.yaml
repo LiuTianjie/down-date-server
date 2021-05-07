@@ -1,0 +1,5 @@
+# jwt configuration
+jwt:
+  signing-key: 'liutaoliutaoliutao'
+  expires-time: 604801
+  buffer-time: 86401

@@ -1,16 +1,14 @@
 package global
 
 import (
+	"down-date-server/src/config"
+
+	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
 var (
-	DB  *gorm.DB
-	JWT JWT_CONFIG
+	DB     *gorm.DB
+	CONFIG config.Server
+	VP     *viper.Viper
 )
-
-type JWT_CONFIG struct {
-	SignKey     string `mapstructure:"signing-key" json:"signingKey" yaml:"signing-key"`    // jwt签名
-	ExpiresTime int64  `mapstructure:"expires-time" json:"expiresTime" yaml:"expires-time"` // 过期时间
-	BufferTime  int64  `mapstructure:"buffer-time" json:"bufferTime" yaml:"buffer-time"`    // 缓冲时间
-}
