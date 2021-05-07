@@ -6,6 +6,7 @@ import (
 	"down-date-server/src/model"
 	"down-date-server/src/model/request"
 	"down-date-server/src/utils"
+	"down-date-server/src/utils/response"
 	"errors"
 	"log"
 	"time"
@@ -132,16 +133,14 @@ func SearchUser(c *gin.Context) {
 	var result []Result
 	err := global.DB.Find(&[]model.User{}).Scan(&result).Error
 	if err != nil {
-		c.JSON(404, gin.H{
-			"status": "FAILED",
-			"detail": "查找失败",
-		})
-		c.Abort()
+		// c.JSON(404, gin.H{
+		// 	"status": "FAILED",
+		// 	"detail": "查找失败",
+		// })
+		// c.Abort()
+		response.Fail(400, c)
 	} else {
-		c.JSON(200, gin.H{
-			"status": "SUCCESS",
-			"detail": result,
-		})
+		response.OkWithDetailed(200, result, "查找成功", c)
 	}
 }
 
@@ -150,15 +149,8 @@ func SearchUserByNickname(c *gin.Context) {
 	nickname, _ := c.GetQuery("nickname")
 	err := global.DB.Where("nickname = ?", nickname).Find(&[]model.User{}).Scan(&result).Error
 	if err != nil {
-		c.JSON(404, gin.H{
-			"status": "FAILED",
-			"detail": "查找失败",
-		})
-		c.Abort()
+		response.FailWithMessage(404, "未查找到资源", c)
 	} else {
-		c.JSON(200, gin.H{
-			"status": "SUCCESS",
-			"detail": result,
-		})
+		response.OkWithDetailed(200, result, "查找成功", c)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"down-date-server/src/global"
 	"down-date-server/src/model"
 	"down-date-server/src/model/request"
+	"down-date-server/src/utils/response"
 	"errors"
 	"strconv"
 	"time"
@@ -28,10 +29,7 @@ func JWTAuth() gin.HandlerFunc {
 		// 我们这里jwt鉴权取头部信息 x-token 登录时回返回token信息 这里前端需要把token存储到cookie或者本地localStorage中 不过需要跟后端协商过期时间 可以约定刷新令牌或者重新登录
 		token := c.Request.Header.Get("x-token")
 		if token == "" {
-			c.JSON(401, gin.H{
-				"status": "FAILED",
-				"detail": "未授权的访问",
-			})
+			response.FailWithMessage(401, "未授权的访问", c)
 			c.Abort()
 			return
 		}
@@ -40,17 +38,11 @@ func JWTAuth() gin.HandlerFunc {
 		claims, err := j.ParseJWT(token)
 		if err != nil {
 			if err == TokenExpired {
-				c.JSON(401, gin.H{
-					"status": "FAILED",
-					"detail": "授权已过期",
-				})
+				response.FailWithMessage(401, "授权已过期", c)
 				c.Abort()
 				return
 			}
-			c.JSON(401, gin.H{
-				"status": "FAILED",
-				"detail": "认证失败",
-			})
+			response.FailWithMessage(401, "认证失败", c)
 			c.Abort()
 			return
 		}
@@ -60,10 +52,7 @@ func JWTAuth() gin.HandlerFunc {
 		// }
 		var u model.User
 		if err = global.DB.Where("`uuid` = ?", claims.UUID.String()).First(&u).Error; err != nil {
-			c.JSON(401, gin.H{
-				"status": "FAILED",
-				"detail": "认证失败",
-			})
+			response.FailWithMessage(401, "认证失败", c)
 			c.Abort()
 		}
 		if claims.ExpiresAt-time.Now().Unix() < claims.BufferTime {
