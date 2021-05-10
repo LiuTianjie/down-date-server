@@ -1,3 +1,11 @@
+/*
+ * @Descripttion: your project
+ * @version: 1.0
+ * @Author: Nickname4th
+ * @Date: 2021-05-03 23:33:11
+ * @LastEditors: Nickname4th
+ * @LastEditTime: 2021-05-08 09:41:49
+ */
 package model
 
 import (

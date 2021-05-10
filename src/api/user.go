@@ -1,3 +1,12 @@
+/*
+ * @Descripttion: little change
+ * @version: 1.0
+ * @Author: Nickname4th
+ * @Date: 2021-05-06 15:05:01
+ * @LastEditors: Nickname4th
+ * @LastEditTime: 2021-05-07 14:30:39
+ */
+
 package api
 
 import (
@@ -22,35 +31,21 @@ func Register(c *gin.Context) {
 	var R model.User
 	err := c.ShouldBind(&R)
 	if err != nil {
-		c.JSON(400, gin.H{
-			"status": "FAILED",
-			"detail": "注册信息有误",
-		})
+		response.FailWithMessage(400, "注册信息有误", c)
 		return
 	}
 	u := &model.User{Username: R.Username, Password: R.Password, Nickname: R.Nickname, HeaderImg: R.HeaderImg, AuthorityId: R.AuthorityId}
 	var user model.User
 	if !errors.Is(global.DB.Where("userName = ?", u.Username).First(&user).Error, gorm.ErrRecordNotFound) { // 判断用户名是否注册
-		log.Println("用户名已注册")
-		c.JSON(400, gin.H{
-			"status": "FAILED",
-			"detail": "用户名已注册",
-		})
+		response.FailWithMessage(400, "用户名已注册", c)
 	} else {
 		u.Password = utils.MD5V([]byte(u.Password))
-		log.Println("register password:", u.Password)
 		u.UUID = uuid.NewV4()
 		err = global.DB.Create(&u).Error
 		if err != nil {
-			c.JSON(400, gin.H{
-				"status": "FAILED",
-				"detail": "注册失败",
-			})
+			response.FailWithMessage(400, "注册失败", c)
 		} else {
-			c.JSON(200, gin.H{
-				"status": "SUCCESS",
-				"detail": "用户注册成功",
-			})
+			response.OkWithMessage(200, "注册成功", c)
 		}
 	}
 
@@ -65,23 +60,16 @@ type LoginUser struct {
 func Login(c *gin.Context) {
 	var L LoginUser
 	if err := c.ShouldBind(&L); err != nil {
-		c.JSON(400, gin.H{
-			"status": "FAILED",
-			"detail": "用户名/密码/验证码不能为空",
-		})
+		response.FailWithMessage(400, "用户名/密码/验证码不能为空", c)
 		c.Abort()
 	} else {
 		// 可以过滤一遍输入，避免SQL注入
 		U := &model.User{Username: L.Username, Password: L.Password}
 		var user model.User
 		U.Password = utils.MD5V([]byte(U.Password))
-		log.Println("login password:", U.Password)
 		err := global.DB.Where("username = ? AND password = ?", U.Username, U.Password).First(&user).Error
 		if err != nil {
-			c.JSON(400, gin.H{
-				"status": "FAILED",
-				"detail": "用户名/密码/错误",
-			})
+			response.FailWithMessage(401, "用户名/密码/错误", c)
 			c.Abort()
 		} else {
 			tokenNext(c, user)
@@ -108,17 +96,10 @@ func tokenNext(c *gin.Context, user model.User) {
 	token, err := j.CreateJWT(claims)
 	if err != nil {
 		log.Println("获取token失败")
-		c.JSON(400, gin.H{
-			"status": "FAILED",
-			"detail": "获取token失败",
-		})
+		response.FailWithMessage(400, "获取token失败", c)
 		return
 	} else {
-		c.JSON(200, gin.H{
-			"status": "SUCCESS",
-			"detail": "登录成功",
-			"token":  token,
-		})
+		response.OkWithDetailed(200, token, "登录成功", c)
 		return
 	}
 
@@ -133,12 +114,7 @@ func SearchUser(c *gin.Context) {
 	var result []Result
 	err := global.DB.Find(&[]model.User{}).Scan(&result).Error
 	if err != nil {
-		// c.JSON(404, gin.H{
-		// 	"status": "FAILED",
-		// 	"detail": "查找失败",
-		// })
-		// c.Abort()
-		response.Fail(400, c)
+		response.FailWithMessage(400, "查找失败", c)
 	} else {
 		response.OkWithDetailed(200, result, "查找成功", c)
 	}
