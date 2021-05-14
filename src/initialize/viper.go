@@ -1,3 +1,11 @@
+/*
+ * @Descripttion: your project
+ * @version: 1.0
+ * @Author: Nickname4th
+ * @Date: 2021-05-06 22:34:52
+ * @LastEditors: Nickname4th
+ * @LastEditTime: 2021-05-10 14:36:49
+ */
 package initialize
 
 import (
